@@ -1,22 +1,23 @@
 import numpy as np
+from numpy.linalg import matrix_power
+
+old_probabilities = [
+    0.0278,
+    0.0556,
+    0.0833,
+    0.1111,
+    0.1389,
+    0.1667,
+    0.1389,
+    0.1111,
+    0.0833,
+    0.0556,
+    0.0278,
+]
 
 
 def create_board():
     board = np.zeros((40, 40))
-
-    old_probabilities = [
-        0.0278,
-        0.0556,
-        0.0833,
-        0.1111,
-        0.1389,
-        0.1667,
-        0.1389,
-        0.1111,
-        0.0833,
-        0.0556,
-        0.0278,
-    ]
 
     # (1/6)^3 chance of rolling 3 pairs in a row --> jail. Refactored probabilities on paper
 
@@ -116,6 +117,9 @@ def create_board():
                 board[i, 28] += 1075 / 17280
                 board[i, 25] += 1075 / 8640
 
+        elif i == 30:  # Jail
+            board[i] = jail_row()
+
         else:  # Normal Squares
             for j, prob in enumerate(probabilities):
                 board[i, (i + j + 2) % 40] = prob
@@ -123,11 +127,44 @@ def create_board():
         # add (1/216) in the Jail cell (column 30)
         board[i, 30] += 1 / 216
 
-        print(f"Sum of entries in row {i}: {board[i].sum()}")
+        # print(f"Sum of entries in row {i}: {board[i].sum()}")
+
+    return board
+
+
+def jail_row():
+    probabilities = np.zeros(40)
+
+    dice_spots = 6
+
+    stay_in_jail = 1 - (dice_spots / 36)
+    move_out_base = dice_spots / 36
+
+    double_moves = [2, 4, 6, 8, 10, 12]  # Possible double outcomes break out of jail
+
+    for move in double_moves:
+        probabilities[(10 + move) % 40] += move_out_base / dice_spots
+
+    # Approximation for the chance of a "get out of jail" card
+    small_chance = 1 / 120
+    scaled_probabilities = np.array(old_probabilities) * small_chance
+
+    for i, prob in enumerate(scaled_probabilities):
+        probabilities[
+            (10 + i + 2) % 40
+        ] += prob  # Add scaled probabilities to corresponding positions
+
+    probabilities[10] += stay_in_jail
+
+    # Normalize to sum to exactly 1
+    probabilities /= np.sum(probabilities)
+
+    return probabilities
 
 
 def transition_matrix():
-    pass
+    board = create_board()
+    # print(matrix_power(board, 100)[10])
 
 
-create_board()
+transition_matrix()
