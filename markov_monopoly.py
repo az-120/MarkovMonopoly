@@ -93,33 +93,33 @@ def create_board():
         if i == 30:
             board[i] = jail_row()
             continue
-        for j in range(len(probabilities)):
+        for j, prob in enumerate(probabilities):
             idx = (i + j + 2) % 40
             if idx in chance_squares:
-                board[i, idx] += (6 / 16) * probabilities[j]
+                board[i, idx] += (6 / 16) * prob
 
-                board[i, i - 3] += probabilities[j] * 1 / 16  # move back 3
+                board[i, i - 3] += prob * 1 / 16  # move back 3
 
                 for c in chance_update:
-                    board[i, c] += probabilities[j] * 1 / 16
+                    board[i, c] += prob * 1 / 16
 
                 if idx == 7:  # Chance near Oriental
-                    board[i, 12] += probabilities[j] * 1 / 16  # nearest utility
-                    board[i, 15] += probabilities[j] * 2 / 16  # nearest railroad
+                    board[i, 12] += prob * 1 / 16  # nearest utility
+                    board[i, 15] += prob * 2 / 16  # nearest railroad
                 elif idx == 36:  # Chance near Park Place
-                    board[i, 12] += probabilities[j] * 1 / 16
-                    board[i, 5] += probabilities[j] * 2 / 16
+                    board[i, 12] += prob * 1 / 16
+                    board[i, 5] += prob * 2 / 16
                 else:  # Chance near Kentucky
-                    board[i, 28] += probabilities[j] * 1 / 16
-                    board[i, 25] += probabilities[j] * 2 / 16
+                    board[i, 28] += prob * 1 / 16
+                    board[i, 25] += prob * 2 / 16
 
             elif idx in chest_squares:
-                board[i, idx] += (14 / 16) * probabilities[j]
-                board[i, 0] += probabilities[j] * (1 / 16)
-                board[i, 30] += probabilities[j] * (1 / 16)
+                board[i, idx] += (14 / 16) * prob
+                board[i, 0] += prob * (1 / 16)
+                board[i, 30] += prob * (1 / 16)
 
             else:
-                board[i, idx] += probabilities[j]
+                board[i, idx] += prob
 
         board[i, 30] += 1 / 216
 
