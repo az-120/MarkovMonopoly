@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.linalg import matrix_power
 
+# Probabilities of rolling two 6-sided die (1/36, 2/36, ...)
 old_probabilities = [
     0.0278,
     0.0556,
@@ -15,12 +16,54 @@ old_probabilities = [
     0.0278,
 ]
 
+monopoly_squares = [
+    "Go",
+    "Mediterranean Avenue",
+    "Community Chest (near Mediterranean Avenue)",
+    "Baltic Avenue",
+    "Income Tax",
+    "Reading Railroad",
+    "Oriental Avenue",
+    "Chance (near Oriental Avenue)",
+    "Vermont Avenue",
+    "Connecticut Avenue",
+    "Jail / Just Visiting",
+    "St. Charles Place",
+    "Electric Company",
+    "States Avenue",
+    "Virginia Avenue",
+    "Pennsylvania Railroad",
+    "St. James Place",
+    "Community Chest (near St. James Place)",
+    "Tennessee Avenue",
+    "New York Avenue",
+    "Free Parking",
+    "Kentucky Avenue",
+    "Chance (near Kentucky Avenue)",
+    "Indiana Avenue",
+    "Illinois Avenue",
+    "B&O Railroad",
+    "Atlantic Avenue",
+    "Ventnor Avenue",
+    "Water Works",
+    "Marvin Gardens",
+    "Go To Jail",
+    "Pacific Avenue",
+    "North Carolina Avenue",
+    "Community Chest (near North Carolina Avenue)",
+    "Pennsylvania Avenue",
+    "Short Line Railroad",
+    "Chance (near Pennsylvania Avenue)",
+    "Park Place",
+    "Luxury Tax",
+    "Boardwalk",
+]
+
 
 def create_board():
     board = np.zeros((40, 40))
 
-    # (1/6)^3 chance of rolling 3 pairs in a row --> jail. Refactored probabilities on paper
-
+    # (1/6)^3 chance of rolling 3 pairs in a row --> jail. Refactored probabilities:
     probabilities = [
         0.02753703259259259,
         0.0556,
@@ -33,49 +76,6 @@ def create_board():
         0.0825120437037037,
         0.0556,
         0.02753703259259259,
-    ]
-
-    monopoly_squares = [
-        "Go",
-        "Mediterranean Avenue",
-        "Community Chest (near Mediterranean Avenue)",
-        "Baltic Avenue",
-        "Income Tax",
-        "Reading Railroad",
-        "Oriental Avenue",
-        "Chance (near Oriental Avenue)",
-        "Vermont Avenue",
-        "Connecticut Avenue",
-        "Jail / Just Visiting",
-        "St. Charles Place",
-        "Electric Company",
-        "States Avenue",
-        "Virginia Avenue",
-        "Pennsylvania Railroad",
-        "St. James Place",
-        "Community Chest (near St. James Place)",
-        "Tennessee Avenue",
-        "New York Avenue",
-        "Free Parking",
-        "Kentucky Avenue",
-        "Chance (near Kentucky Avenue)",
-        "Indiana Avenue",
-        "Illinois Avenue",
-        "B&O Railroad",
-        "Atlantic Avenue",
-        "Ventnor Avenue",
-        "Water Works",
-        "Marvin Gardens",
-        "Go To Jail",
-        "Pacific Avenue",
-        "North Carolina Avenue",
-        "Community Chest (near North Carolina Avenue)",
-        "Pennsylvania Avenue",
-        "Short Line Railroad",
-        "Chance (near Pennsylvania Avenue)",
-        "Park Place",
-        "Luxury Tax",
-        "Boardwalk",
     ]
 
     # 2 - community chest, 7 - chance, 17 - community chest, 22 - chance, 30 - jail, 33 - community chest, 36 - chance
@@ -95,6 +95,7 @@ def create_board():
                 board[i, (i + j + 2) % 40] = prob
             board[i, 0] += 215 / 3456
             board[i, 30] += 215 / 3456
+            board[i, 30] += 1 / 216
 
         elif i in chance_squares:
             for j, prob in enumerate(chance_probabilities):
@@ -116,6 +117,7 @@ def create_board():
             else:  # Chance near Kentucky
                 board[i, 28] += 1075 / 17280
                 board[i, 25] += 1075 / 8640
+            board[i, 30] += 1 / 216
 
         elif i == 30:  # Jail
             board[i] = jail_row()
@@ -123,9 +125,7 @@ def create_board():
         else:  # Normal Squares
             for j, prob in enumerate(probabilities):
                 board[i, (i + j + 2) % 40] = prob
-
-        # add (1/216) in the Jail cell (column 30)
-        board[i, 30] += 1 / 216
+            board[i, 30] += 1 / 216
 
         # print(f"Sum of entries in row {i}: {board[i].sum()}")
 
@@ -134,6 +134,9 @@ def create_board():
 
 def jail_row():
     probabilities = np.zeros(40)
+
+    # 1/120 chance of having out of jail card
+    #
 
     dice_spots = 6
 
@@ -164,7 +167,11 @@ def jail_row():
 
 def transition_matrix():
     board = create_board()
-    # print(matrix_power(board, 100)[10])
+    equilibrium = matrix_power(board, 50000)
+
+    for i in range(len(equilibrium[0])):
+        percent = equilibrium[0][i] * 100
+        print(monopoly_squares[i], percent)
 
 
 transition_matrix()
