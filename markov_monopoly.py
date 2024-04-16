@@ -81,51 +81,47 @@ def create_board():
     # 2 - community chest, 7 - chance, 17 - community chest, 22 - chance, 30 - jail, 33 - community chest, 36 - chance
 
     # Community Chest: 1/16 go, 1/16 jail. Subtract (2*1/16)/6 from probabilities, add go/jail:
-    chest_probabilities = [p * (14 / 16) for p in probabilities]
     chest_squares = [2, 17, 33]
 
     # Chance: 1/16: boardwalk, Go, Illinois, St. Charles, nearest Utility, Go Back 3, Jail, Reading Railroad, 2/16: nearest Railroad
-    # Subtract (10/16)/11 from probabilities
-    chance_probabilities = [p * (6 / 16) for p in probabilities]
     chance_squares = [7, 22, 36]
+    chance_update = [0, 5, 11, 24, 30, 39]
+
+    # Go: [0,0,1/36 * 14/16,]
 
     for i in range(40):
-        if i in chest_squares:
-            for j, prob in enumerate(chest_probabilities):
-                board[i, (i + j + 2) % 40] = prob
-            board[i, 0] += 215 / 3456
-            board[i, 30] += 215 / 3456
-            board[i, 30] += 1 / 216
-
-        elif i in chance_squares:
-            for j, prob in enumerate(chance_probabilities):
-                board[i, (i + j + 2) % 40] = prob
-            board[i, 39] += 1075 / 17280
-            board[i, 0] += 1075 / 17280
-            board[i, 24] += 1075 / 17280
-            board[i, 11] += 1075 / 17280
-            board[i, i - 3] += 1075 / 17280
-            board[i, 30] += 1075 / 17280
-            board[i, 5] += 1075 / 17280
-
-            if i == 7:  # Chance near Oriental
-                board[i, 12] += 1075 / 17280
-                board[i, 15] += 1075 / 8640
-            elif i == 36:  # Chance near Park Place
-                board[i, 12] += 1075 / 17280
-                board[i, 5] += 1075 / 8640
-            else:  # Chance near Kentucky
-                board[i, 28] += 1075 / 17280
-                board[i, 25] += 1075 / 8640
-            board[i, 30] += 1 / 216
-
-        elif i == 30:  # Jail
+        if i == 30:
             board[i] = jail_row()
+            continue
+        for j in range(len(probabilities)):
+            idx = (i + j + 2) % 40
+            if idx in chance_squares:
+                board[i, idx] += (6 / 16) * probabilities[j]
 
-        else:  # Normal Squares
-            for j, prob in enumerate(probabilities):
-                board[i, (i + j + 2) % 40] = prob
-            board[i, 30] += 1 / 216
+                board[i, i - 3] += probabilities[j] * 1 / 16  # move back 3
+
+                for c in chance_update:
+                    board[i, c] += probabilities[j] * 1 / 16
+
+                if idx == 7:  # Chance near Oriental
+                    board[i, 12] += probabilities[j] * 1 / 16  # nearest utility
+                    board[i, 15] += probabilities[j] * 2 / 16  # nearest railroad
+                elif idx == 36:  # Chance near Park Place
+                    board[i, 12] += probabilities[j] * 1 / 16
+                    board[i, 5] += probabilities[j] * 2 / 16
+                else:  # Chance near Kentucky
+                    board[i, 28] += probabilities[j] * 1 / 16
+                    board[i, 25] += probabilities[j] * 2 / 16
+
+            elif idx in chest_squares:
+                board[i, idx] += (14 / 16) * probabilities[j]
+                board[i, 0] += probabilities[j] * (1 / 16)
+                board[i, 30] += probabilities[j] * (1 / 16)
+
+            else:
+                board[i, idx] += probabilities[j]
+
+        board[i, 30] += 1 / 216
 
         # print(f"Sum of entries in row {i}: {board[i].sum()}")
 
@@ -136,7 +132,6 @@ def jail_row():
     probabilities = np.zeros(40)
 
     # 1/120 chance of having out of jail card
-    #
 
     dice_spots = 6
 
