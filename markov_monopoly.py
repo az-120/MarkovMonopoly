@@ -141,7 +141,7 @@ def jail_row():
     double_moves = [2, 4, 6, 8, 10, 12]  # Possible double outcomes break out of jail
 
     for move in double_moves:
-        probabilities[(30 + move) % 40] += move_out_base / dice_spots
+        probabilities[(10 + move) % 40] += move_out_base / dice_spots
 
     # Approximation for the chance of a "get out of jail" card
     small_chance = 1 / 120
@@ -152,7 +152,7 @@ def jail_row():
             (10 + i + 2) % 40
         ] += prob  # Add scaled probabilities to corresponding positions
 
-    probabilities[30] += stay_in_jail
+    probabilities[10] += stay_in_jail
 
     # Normalize to sum to exactly 1
     probabilities /= np.sum(probabilities)
