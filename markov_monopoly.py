@@ -1,5 +1,8 @@
 import numpy as np
 from numpy.linalg import matrix_power
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.colors as mcolors
 
 # Probabilities of rolling two 6-sided die (1/36, 2/36, ...)
 old_probabilities = [
@@ -135,7 +138,7 @@ def jail_row():
 
     dice_spots = 6
 
-    stay_in_jail = 1 - (dice_spots / 36)
+    stay_in_jail = 1 / 3 * (1 - (dice_spots / 36))
     move_out_base = dice_spots / 36
 
     double_moves = [2, 4, 6, 8, 10, 12]  # Possible double outcomes break out of jail
@@ -152,7 +155,7 @@ def jail_row():
             (10 + i + 2) % 40
         ] += prob  # Add scaled probabilities to corresponding positions
 
-    probabilities[10] += stay_in_jail
+    probabilities[30] += stay_in_jail
 
     # Normalize to sum to exactly 1
     probabilities /= np.sum(probabilities)
@@ -162,11 +165,28 @@ def jail_row():
 
 def transition_matrix():
     board = create_board()
+
     equilibrium = matrix_power(board, 20000)
 
     for i in range(len(equilibrium[0])):
         percent = equilibrium[0][i] * 100
         print(monopoly_squares[i], percent)
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    for i in range(board.shape[0]):
+        row_min = board[i, :].min()
+        row_max = board[i, :].max()
+        board[i, :] = (board[i, :] - row_min) / (row_max - row_min)
+
+    cmap = plt.get_cmap("viridis")
+    heatmap = ax.imshow(board, aspect="auto", cmap=cmap, interpolation="none")
+    plt.colorbar(heatmap, ax=ax, orientation="vertical")
+    ax.set_title("Heatmap of Monopoly Transition Matrix")
+    ax.set_xlabel("Destination Square")
+    ax.set_ylabel("Starting Square")
+
+    plt.show()
 
 
 transition_matrix()
