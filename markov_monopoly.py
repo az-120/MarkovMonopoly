@@ -86,11 +86,9 @@ def create_board():
     # Community Chest: 1/16 go, 1/16 jail. Subtract (2*1/16)/6 from probabilities, add go/jail:
     chest_squares = [2, 17, 33]
 
-    # Chance: 1/16: boardwalk, Go, Illinois, St. Charles, nearest Utility, Go Back 3, Jail, Reading Railroad, 2/16: nearest Railroad
+    # Chance: 1/16: boardwalk, Go, IL, St. Charles, nearest Util, Back 3, Jail, Reading RR, 2/16: nearest RR
     chance_squares = [7, 22, 36]
     chance_update = [0, 5, 11, 24, 30, 39]
-
-    # Go: [0,0,1/36 * 14/16,]
 
     for i in range(40):
         if i == 30:
@@ -126,8 +124,6 @@ def create_board():
 
         board[i, 30] += 1 / 216
 
-        # print(f"Sum of entries in row {i}: {board[i].sum()}")
-
     return board
 
 
@@ -138,7 +134,7 @@ def jail_row():
 
     dice_spots = 6
 
-    stay_in_jail = 1 / 3 * (1 - (dice_spots / 36))
+    stay_in_jail = 1 / 3 * (1 - (dice_spots / 36))  # Players likely to buy out
     move_out_base = dice_spots / 36
 
     double_moves = [2, 4, 6, 8, 10, 12]  # Possible double outcomes break out of jail
@@ -168,25 +164,27 @@ def transition_matrix():
 
     equilibrium = matrix_power(board, 20000)
 
+    # Visualization code below...
+
     for i in range(len(equilibrium[0])):
         percent = equilibrium[0][i] * 100
         print(monopoly_squares[i], percent)
 
-    fig, ax = plt.subplots(figsize=(10, 10))
+    # fig, ax = plt.subplots(figsize=(10, 10))
 
-    for i in range(board.shape[0]):
-        row_min = board[i, :].min()
-        row_max = board[i, :].max()
-        board[i, :] = (board[i, :] - row_min) / (row_max - row_min)
+    # for i in range(board.shape[0]):
+    #     row_min = board[i, :].min()
+    #     row_max = board[i, :].max()
+    #     board[i, :] = (board[i, :] - row_min) / (row_max - row_min)
 
-    cmap = plt.get_cmap("viridis")
-    heatmap = ax.imshow(board, aspect="auto", cmap=cmap, interpolation="none")
-    plt.colorbar(heatmap, ax=ax, orientation="vertical")
-    ax.set_title("Heatmap of Monopoly Transition Matrix")
-    ax.set_xlabel("Destination Square")
-    ax.set_ylabel("Starting Square")
+    # cmap = plt.get_cmap("viridis")
+    # heatmap = ax.imshow(board, aspect="auto", cmap=cmap, interpolation="none")
+    # plt.colorbar(heatmap, ax=ax, orientation="vertical")
+    # ax.set_title("Heatmap of Monopoly Transition Matrix")
+    # ax.set_xlabel("Destination Square")
+    # ax.set_ylabel("Starting Square")
 
-    plt.show()
+    # plt.show()
 
 
 transition_matrix()
